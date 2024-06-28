@@ -9,7 +9,7 @@
 class ASTNode {
   public:
     virtual ~ASTNode() = default;
-    virtual auto show() const -> std::string;
+    virtual auto show() const -> std::string = 0;
 };
 
 class ASTNumber: public ASTNode {

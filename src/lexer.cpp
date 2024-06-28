@@ -1,6 +1,5 @@
 #include "lexer.h"
 
-#include <iostream>
 #include <string>
 #include <vector>
 
@@ -12,8 +11,6 @@ auto lexer(std::string expression) -> std::vector<ParseToken> {
         if (c == ' ') {
             continue;
         }
-
-        std::cout << c << '\n';
 
         if (c == '+') {
             tokens.push_back({TokenType::Plus, 0, i, 1});
