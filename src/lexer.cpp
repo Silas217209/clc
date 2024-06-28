@@ -48,8 +48,7 @@ auto lexer(std::string expression) -> std::vector<ParseToken> {
         }
 
         int val = std::stoi(string_num);
-        tokens.push_back({TokenType::Number, val, start_pos, string_num.size()}
-        );
+        tokens.push_back({TokenType::Number, val, start_pos, string_num.size()});
     }
 
     return tokens;

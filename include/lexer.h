@@ -17,7 +17,8 @@ enum class TokenType {
 
 struct ParseToken {
     TokenType type;
-    int value = 0;
+	int value;
+	    
     size_t pos;
     size_t len;
 };

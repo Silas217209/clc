@@ -1,6 +1,7 @@
 #include <iostream>
 #include <string>
 
+#include "ast.h"
 #include "lexer.h"
 
 // command line calculator
@@ -15,7 +16,16 @@ auto main(int argc, char* argv[]) -> int {
 
     std::string expression {argv[1]};
 
-    auto tokens = lexer(expression);
+    std::vector<ParseToken> tokens = lexer(expression);
+
+    ASTNode* root = nullptr;
+    auto res = ast_from_tokens(tokens, root);
+    if (!res.has_value()) {
+        std::cerr << "Error: " << res.error() << '\n';
+        return 1;
+    }
+
+    std::cout << res.value()->show() << '\n';
 
     return 0;
 }
