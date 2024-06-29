@@ -166,6 +166,9 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
                         case TokenType::Divide:
                             op = new ASTDivide(left, right);
                             break;
+                        case TokenType::Pow:
+                            op = new ASTPow(left, right);
+                            break;
                         default:
                             return tl::make_unexpected("Invalid operator");
                     }
@@ -200,6 +203,9 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
                 break;
             case TokenType::Divide:
                 output.push(new ASTDivide(left, right));
+                break;
+            case TokenType::Pow:
+                output.push(new ASTPow(left, right));
                 break;
             default:
                 return tl::make_unexpected("Invalid operator");

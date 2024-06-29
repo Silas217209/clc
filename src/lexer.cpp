@@ -35,6 +35,7 @@ auto lexer(std::string expression) -> tl::expected<std::vector<ParseToken>, std:
         }
         if (c == '^') {
             tokens.push_back({TokenType::Pow, 0, i, 1});
+            continue;
         }
         if (c == '(') {
             tokens.push_back({TokenType::LParen, 0, i, 1});
