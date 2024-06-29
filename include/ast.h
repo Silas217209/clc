@@ -59,4 +59,4 @@ class ASTNegate: public ASTNode {
     auto show() const -> std::string override;
 };
 
-auto ast_from_tokens(std::vector<ParseToken> tokens, ASTNode* node) -> tl::expected<ASTNode*, std::string>;
+auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::string>;

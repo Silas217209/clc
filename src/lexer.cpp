@@ -5,6 +5,8 @@
 #include <string>
 #include <vector>
 
+#include "expected.h"
+
 auto lexer(std::string expression) -> std::vector<ParseToken> {
     std::vector<ParseToken> tokens;
 
@@ -45,6 +47,7 @@ auto lexer(std::string expression) -> std::vector<ParseToken> {
             i++;
             c = expression[i];
         }
+        i--;
 
         int val = std::stoi(string_num);
         tokens.push_back({TokenType::Number, val, start_pos, string_num.size()});
@@ -67,7 +70,7 @@ auto precedence(TokenType type) -> int {
 }
 
 // Shunting Yard Algorithm
-auto to_reverse_polish(const std::vector<ParseToken>& tokens) -> std::queue<ParseToken> {
+auto to_reverse_polish(const std::vector<ParseToken>& tokens) -> tl::expected<std::queue<ParseToken>, std::string> {
     std::stack<ParseToken> operators;
     std::queue<ParseToken> output;
 
@@ -81,7 +84,7 @@ auto to_reverse_polish(const std::vector<ParseToken>& tokens) -> std::queue<Pars
             case TokenType::Minus:
             case TokenType::Multiply:
             case TokenType::Divide: {
-                while (!operators.empty() && precedence(operators.top().type) > precedence(token.type)) {
+                while (!operators.empty() && precedence(operators.top().type) >= precedence(token.type)) {
                     output.push(operators.top());
                     operators.pop();
                 }
@@ -98,6 +101,9 @@ auto to_reverse_polish(const std::vector<ParseToken>& tokens) -> std::queue<Pars
                     operators.pop();
                 }
                 // discard left bracket
+                if (operators.empty()) {
+                    return tl::make_unexpected("Mismatched parentheses");
+                }
                 operators.pop();
                 break;
             }

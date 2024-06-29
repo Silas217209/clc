@@ -4,6 +4,8 @@
 #include <queue>
 #include <string>
 #include <vector>
+
+#include "expected.h"
 enum class TokenType { Number, Plus, Minus, Multiply, Divide, LParen, RParen };
 
 struct ParseToken {
@@ -15,7 +17,5 @@ struct ParseToken {
 };
 
 auto lexer(std::string expression) -> std::vector<ParseToken>;
-
-auto to_reverse_polish(const std::vector<ParseToken>& tokens) -> std::queue<ParseToken>;
 
 auto precedence(TokenType token_type) -> int;

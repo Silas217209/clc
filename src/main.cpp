@@ -4,6 +4,25 @@
 #include "ast.h"
 #include "lexer.h"
 
+auto display_token(ParseToken token) -> std::string {
+    switch (token.type) {
+        case TokenType::Number:
+            return " " + std::to_string(token.value);
+        case TokenType::Plus:
+            return "+";
+        case TokenType::Minus:
+            return "-";
+        case TokenType::Multiply:
+            return "*";
+        case TokenType::Divide:
+            return "/";
+        case TokenType::LParen:
+            return "(";
+        case TokenType::RParen:
+            return ")";
+    }
+}
+
 // command line calculator
 // "2 + 2" -> 4
 // one CLI argument : string
@@ -18,37 +37,14 @@ auto main(int argc, char* argv[]) -> int {
 
     std::vector<ParseToken> tokens = lexer(expression);
 
-    std::queue<ParseToken> rpn = to_reverse_polish(tokens);
-
-    while (!rpn.empty()) {
-        auto token = rpn.front();
-        switch (token.type) {
-            case TokenType::Number:
-                std::cout << token.value;
-                break;
-            case TokenType::Plus:
-                std::cout << "+";
-                break;
-            case TokenType::Minus:
-                std::cout << "-";
-                break;
-            case TokenType::Multiply:
-                std::cout << "*";
-                break;
-            case TokenType::Divide:
-                std::cout << "/";
-                break;
-            case TokenType::LParen:
-                std::cout << "(";
-                break;
-            case TokenType::RParen:
-                std::cout << ")";
-                break;
-        }
-        rpn.pop();
-    }
-
     std::cout << "\n";
+
+    auto ast_result = ast(tokens);
+    if (!ast_result.has_value()) {
+        std::cerr << "Error: " << ast_result.error() << "\n";
+        return 1;
+    }
+    std::cout << ast_result.value()->show() << "\n";
 
     return 0;
 }

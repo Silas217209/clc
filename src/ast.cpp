@@ -1,6 +1,7 @@
 #include "ast.h"
 
 #include <expected>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -43,81 +44,120 @@ auto ASTNegate::show() const -> std::string {
     return "(-" + val->show() + ")";
 }
 
-auto ast_from_tokens(std::vector<ParseToken> tokens, ASTNode* node) -> tl::expected<ASTNode*, std::string> {
-    for (size_t i = 0; i < tokens.size(); i++) {
-        ParseToken token = tokens[i];
+// Shunting Yard Algorithm
+auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::string> {
+    std::stack<ParseToken> operators;
+    std::stack<ASTNode*> output;
 
+    for (ParseToken token : tokens) {
         switch (token.type) {
             case TokenType::Number: {
-                ASTNumber* number = new ASTNumber(token.value);
-                if (node != nullptr) {
-                    return tl::make_unexpected("Error: Number token with left side");
-                }
-
-                node = number;
+                output.push(new ASTNumber(token.value));
                 break;
             }
-            case TokenType::Plus: {
-                if (node == nullptr) {
-                    return tl::make_unexpected("Error: Plus token with no left side");
-                }
-                ASTNode* right = nullptr;
-                auto res = ast_from_tokens(std::vector(tokens.begin() + i + 1, tokens.end()), right);
-                if (!res.has_value()) {
-                    return tl::make_unexpected(res.error());
-                }
-
-                return new ASTPlus(node, res.value());
-
-                break;
-            }
-            case TokenType::Minus: {
-                if (node == nullptr) {
-                    return tl::make_unexpected("Error: Minus token with no left side");
-                }
-                ASTNode* right = nullptr;
-                auto res = ast_from_tokens(std::vector(tokens.begin() + i + 1, tokens.end()), right);
-                if (!res.has_value()) {
-                    return tl::make_unexpected(res.error());
-                }
-
-                return new ASTMinus(node, res.value());
-
-                break;
-            }
-            case TokenType::Multiply: {
-                if (node == nullptr) {
-                    return tl::make_unexpected("Error: Minus token with no left side");
-                }
-                ASTNode* right = nullptr;
-                auto res = ast_from_tokens(std::vector(tokens.begin() + i + 1, tokens.end()), right);
-                if (!res.has_value()) {
-                    return tl::make_unexpected(res.error());
-                }
-
-                return new ASTMultiply(node, res.value());
-
-                break;
-            }
+            case TokenType::Plus:
+            case TokenType::Minus:
+            case TokenType::Multiply:
             case TokenType::Divide: {
-                if (node == nullptr) {
-                    return tl::make_unexpected("Error: Minus token with no left side");
-                }
-                ASTNode* right = nullptr;
-                auto res = ast_from_tokens(std::vector(tokens.begin() + i + 1, tokens.end()), right);
-                if (!res.has_value()) {
-                    return tl::make_unexpected(res.error());
-                }
+                while (!operators.empty() && precedence(operators.top().type) >= precedence(token.type)) {
+                    auto right = output.top();
+                    output.pop();
+                    auto left = output.top();
+                    output.pop();
 
-                return new ASTDivide(node, res.value());
+                    ASTNode* op;
+                    switch (operators.top().type) {
+                        case TokenType::Plus:
+                            op = new ASTPlus(left, right);
+                            break;
+                        case TokenType::Minus:
+                            op = new ASTMinus(left, right);
+                            break;
+                        case TokenType::Multiply:
+                            op = new ASTMultiply(left, right);
+                            break;
+                        case TokenType::Divide:
+                            op = new ASTDivide(left, right);
+                            break;
+                        default:
+                            return tl::make_unexpected("Invalid operator");
+                    }
 
+                    output.push(op);
+                    operators.pop();
+                }
+                operators.push(token);
                 break;
             }
-            case TokenType::LParen:
-            case TokenType::RParen:
+            case TokenType::LParen: {
+                operators.push(token);
                 break;
+            }
+            case TokenType::RParen: {
+                while (!operators.empty() && operators.top().type != TokenType::LParen) {
+                    auto right = output.top();
+                    output.pop();
+                    auto left = output.top();
+                    output.pop();
+
+                    ASTNode* op;
+                    switch (operators.top().type) {
+                        case TokenType::Plus:
+                            op = new ASTPlus(left, right);
+                            break;
+                        case TokenType::Minus:
+                            op = new ASTMinus(left, right);
+                            break;
+                        case TokenType::Multiply:
+                            op = new ASTMultiply(left, right);
+                            break;
+                        case TokenType::Divide:
+                            op = new ASTDivide(left, right);
+                            break;
+                        default:
+                            return tl::make_unexpected("Invalid operator");
+                    }
+
+                    output.push(op);
+                    operators.pop();
+                }
+                // discard left bracket
+                if (operators.empty()) {
+                    return tl::make_unexpected("Mismatched parentheses");
+                }
+                operators.pop();
+                break;
+            }
         }
     }
 
-    return node;
+    while (!operators.empty()) {
+        auto right = output.top();
+        output.pop();
+        auto left = output.top();
+        output.pop();
+        switch (operators.top().type) {
+            case TokenType::Plus:
+                output.push(new ASTPlus(left, right));
+                break;
+            case TokenType::Minus:
+                output.push(new ASTMinus(left, right));
+                break;
+            case TokenType::Multiply:
+                output.push(new ASTMultiply(left, right));
+                break;
+            case TokenType::Divide:
+                output.push(new ASTDivide(left, right));
+                break;
+            default:
+                return tl::make_unexpected("Invalid operator");
+        }
+        operators.pop();
+    }
+
+    if (output.size() != 1) {
+        return tl::make_unexpected("Invalid expression, size is " + std::to_string(output.size()) + " expected 1");
+    }
+
+    return output.top();
 }
