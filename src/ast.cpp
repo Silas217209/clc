@@ -1,5 +1,6 @@
 #include "ast.h"
 
+#include <cmath>
 #include <expected>
 #include <stack>
 #include <string>
@@ -8,7 +9,7 @@
 #include "expected.h"
 #include "lexer.h"
 
-ASTNumber::ASTNumber(int value) : value(value) {}
+ASTNumber::ASTNumber(double value) : value(value) {}
 
 ASTPlus::ASTPlus(ASTNode* left, ASTNode* right) : left(left), right(right) {}
 
@@ -19,6 +20,8 @@ ASTMultiply::ASTMultiply(ASTNode* left, ASTNode* right) : left(left), right(righ
 ASTDivide::ASTDivide(ASTNode* left, ASTNode* right) : left(left), right(right) {}
 
 ASTNegate::ASTNegate(ASTNode* val) : val(val) {}
+
+ASTPow::ASTPow(ASTNode* base, ASTNode* exponent) : base(base), exponent(exponent) {}
 
 auto ASTNumber::show() const -> std::string {
     return std::to_string(value);
@@ -44,28 +47,49 @@ auto ASTNegate::show() const -> std::string {
     return "(-" + val->show() + ")";
 }
 
-auto ASTNumber::eval() -> int {
+auto ASTPow::show() const -> std::string {
+    return "(" + base->show() + " ^(" + exponent->show() + "))";
+}
+
+auto ASTNumber::eval() -> double {
     return value;
 }
 
-auto ASTPlus::eval() -> int {
+auto ASTPlus::eval() -> double {
     return left->eval() + right->eval();
 }
 
-auto ASTMinus::eval() -> int {
+auto ASTMinus::eval() -> double {
     return left->eval() - right->eval();
 }
 
-auto ASTMultiply::eval() -> int {
+auto ASTMultiply::eval() -> double {
     return left->eval() * right->eval();
 }
 
-auto ASTDivide::eval() -> int {
+auto ASTDivide::eval() -> double {
     return left->eval() / right->eval();
 }
 
-auto ASTNegate::eval() -> int {
+auto ASTNegate::eval() -> double {
     return -val->eval();
+}
+
+auto ASTPow::eval() -> double {
+    return pow(base->eval(), exponent->eval());
+}
+
+auto precedence(TokenType type) -> int {
+    switch (type) {
+        case TokenType::Plus:
+        case TokenType::Minus:
+            return 1;
+        case TokenType::Multiply:
+        case TokenType::Divide:
+            return 2;
+        default:
+            return 0;
+    }
 }
 
 // Shunting Yard Algorithm
@@ -82,6 +106,7 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
             case TokenType::Plus:
             case TokenType::Minus:
             case TokenType::Multiply:
+            case TokenType::Pow:
             case TokenType::Divide: {
                 while (!operators.empty() && precedence(operators.top().type) >= precedence(token.type)) {
                     auto right = output.top();
@@ -102,6 +127,9 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
                             break;
                         case TokenType::Divide:
                             op = new ASTDivide(left, right);
+                            break;
+                        case TokenType::Pow:
+                            op = new ASTPow(left, right);
                             break;
                         default:
                             return tl::make_unexpected("Invalid operator");

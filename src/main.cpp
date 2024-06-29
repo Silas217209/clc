@@ -16,6 +16,8 @@ auto display_token(ParseToken token) -> std::string {
             return "*";
         case TokenType::Divide:
             return "/";
+        case TokenType::Pow:
+            return "^";
         case TokenType::LParen:
             return "(";
         case TokenType::RParen:
@@ -35,17 +37,20 @@ auto main(int argc, char* argv[]) -> int {
 
     std::string expression {argv[1]};
 
-    std::vector<ParseToken> tokens = lexer(expression);
+    tl::expected<std::vector<ParseToken>, std::string> tokens = lexer(expression);
+    if (!tokens.has_value()) {
+        std::cerr << "Error: " << tokens.error() << "\n";
+        return 1;
+    }
 
     std::cout << "\n";
 
-    auto ast_result = ast(tokens);
+    auto ast_result = ast(tokens.value());
     if (!ast_result.has_value()) {
         std::cerr << "Error: " << ast_result.error() << "\n";
         return 1;
     }
-    std::cout << ast_result.value()->show() << " = " << ast_result.value()->eval() << "\n";
-
+    std::cout << expression << " = " << ast_result.value()->eval() << "\n";
 
     return 0;
 }
