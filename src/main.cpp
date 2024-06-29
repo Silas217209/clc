@@ -44,7 +44,8 @@ auto main(int argc, char* argv[]) -> int {
         std::cerr << "Error: " << ast_result.error() << "\n";
         return 1;
     }
-    std::cout << ast_result.value()->show() << "\n";
+    std::cout << ast_result.value()->show() << " = " << ast_result.value()->eval() << "\n";
+
 
     return 0;
 }

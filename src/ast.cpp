@@ -44,6 +44,30 @@ auto ASTNegate::show() const -> std::string {
     return "(-" + val->show() + ")";
 }
 
+auto ASTNumber::eval() -> int {
+    return value;
+}
+
+auto ASTPlus::eval() -> int {
+    return left->eval() + right->eval();
+}
+
+auto ASTMinus::eval() -> int {
+    return left->eval() - right->eval();
+}
+
+auto ASTMultiply::eval() -> int {
+    return left->eval() * right->eval();
+}
+
+auto ASTDivide::eval() -> int {
+    return left->eval() / right->eval();
+}
+
+auto ASTNegate::eval() -> int {
+    return -val->eval();
+}
+
 // Shunting Yard Algorithm
 auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::string> {
     std::stack<ParseToken> operators;
