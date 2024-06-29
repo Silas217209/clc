@@ -1,5 +1,7 @@
 #include "lexer.h"
 
+#include <queue>
+#include <stack>
 #include <string>
 #include <vector>
 
@@ -49,4 +51,63 @@ auto lexer(std::string expression) -> std::vector<ParseToken> {
     }
 
     return tokens;
+}
+
+auto precedence(TokenType type) -> int {
+    switch (type) {
+        case TokenType::Plus:
+        case TokenType::Minus:
+            return 1;
+        case TokenType::Multiply:
+        case TokenType::Divide:
+            return 2;
+        default:
+            return 0;
+    }
+}
+
+// Shunting Yard Algorithm
+auto to_reverse_polish(const std::vector<ParseToken>& tokens) -> std::queue<ParseToken> {
+    std::stack<ParseToken> operators;
+    std::queue<ParseToken> output;
+
+    for (ParseToken token : tokens) {
+        switch (token.type) {
+            case TokenType::Number: {
+                output.push(token);
+                break;
+            }
+            case TokenType::Plus:
+            case TokenType::Minus:
+            case TokenType::Multiply:
+            case TokenType::Divide: {
+                while (!operators.empty() && precedence(operators.top().type) > precedence(token.type)) {
+                    output.push(operators.top());
+                    operators.pop();
+                }
+                operators.push(token);
+                break;
+            }
+            case TokenType::LParen: {
+                operators.push(token);
+                break;
+            }
+            case TokenType::RParen: {
+                while (!operators.empty() && operators.top().type != TokenType::LParen) {
+                    output.push(operators.top());
+                    operators.pop();
+                }
+                // discard left bracket
+                operators.pop();
+                break;
+            }
+        }
+    }
+
+    while (!operators.empty()) {
+        output.push(operators.top());
+        operators.pop();
+    }
+
+    return output;
 }

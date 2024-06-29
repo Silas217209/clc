@@ -18,14 +18,37 @@ auto main(int argc, char* argv[]) -> int {
 
     std::vector<ParseToken> tokens = lexer(expression);
 
-    ASTNode* root = nullptr;
-    auto res = ast_from_tokens(tokens, root);
-    if (!res.has_value()) {
-        std::cerr << "Error: " << res.error() << '\n';
-        return 1;
+    std::queue<ParseToken> rpn = to_reverse_polish(tokens);
+
+    while (!rpn.empty()) {
+        auto token = rpn.front();
+        switch (token.type) {
+            case TokenType::Number:
+                std::cout << token.value;
+                break;
+            case TokenType::Plus:
+                std::cout << "+";
+                break;
+            case TokenType::Minus:
+                std::cout << "-";
+                break;
+            case TokenType::Multiply:
+                std::cout << "*";
+                break;
+            case TokenType::Divide:
+                std::cout << "/";
+                break;
+            case TokenType::LParen:
+                std::cout << "(";
+                break;
+            case TokenType::RParen:
+                std::cout << ")";
+                break;
+        }
+        rpn.pop();
     }
 
-    std::cout << res.value()->show() << '\n';
+    std::cout << "\n";
 
     return 0;
 }

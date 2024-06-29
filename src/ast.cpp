@@ -81,14 +81,6 @@ auto ast_from_tokens(std::vector<ParseToken> tokens, ASTNode* node) -> tl::expec
                     return tl::make_unexpected(res.error());
                 }
 
-                // if right node is an operator
-                if (auto plusNode = dynamic_cast<ASTPlus*>(right)) {
-                    auto temp_right = plusNode->right;
-                    plusNode->right = node;
-                    ASTPlus* new_plus = new ASTPlus(new ASTNegate(plusNode->left);
-                } else if (auto minusNode = dynamic_cast<ASTMinus*>(right)) {
-                }
-
                 return new ASTMinus(node, res.value());
 
                 break;
@@ -123,8 +115,6 @@ auto ast_from_tokens(std::vector<ParseToken> tokens, ASTNode* node) -> tl::expec
             }
             case TokenType::LParen:
             case TokenType::RParen:
-            case TokenType::End:
-            case TokenType::Invalid:
                 break;
         }
     }
