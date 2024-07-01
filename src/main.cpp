@@ -13,6 +13,7 @@ auto display_token(ParseToken token) -> std::string {
         case TokenType::Plus:
             return "+";
         case TokenType::Minus:
+        case TokenType::UnaryMinus:
             return "-";
         case TokenType::Multiply:
             return "*";
@@ -51,7 +52,7 @@ auto fraction_approximation(double value, double tolerance = 1e-15) -> std::stri
         // Check if we are within the tolerance
         double mediant_value = static_cast<double>(mediant_numerator) / mediant_denominator;
         if (std::abs(mediant_value - decimal) < tolerance) {
-            return std::to_string(mediant_numerator + static_cast<int>(value) * mediant_denominator) + "/"
+            return std::to_string(mediant_numerator + static_cast<int>(value) * mediant_denominator) + "⁄"
                 + std::to_string(mediant_denominator);
         }
 

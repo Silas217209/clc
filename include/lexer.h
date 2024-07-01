@@ -6,7 +6,7 @@
 
 #include "expected.h"
 
-enum class TokenType { Number, Plus, Minus, Multiply, Divide, Pow, LParen, RParen };
+enum class TokenType { Number, Plus, Minus, UnaryMinus, Multiply, Divide, Pow, LParen, RParen };
 
 struct ParseToken {
     TokenType type;

@@ -22,6 +22,10 @@ auto lexer(std::string expression) -> tl::expected<std::vector<ParseToken>, std:
             continue;
         }
         if (c == '-') {
+            if (i == 0 || expression[i - 1] == '(') {
+                tokens.push_back({TokenType::UnaryMinus, 0, i, 1});
+                continue;
+            }
             tokens.push_back({TokenType::Minus, 0, i, 1});
             continue;
         }

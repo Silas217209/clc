@@ -82,6 +82,7 @@ auto ASTPow::eval() -> double {
 auto precedence(TokenType type) -> int {
     switch (type) {
         case TokenType::Plus:
+        case TokenType::UnaryMinus:
         case TokenType::Minus:
             return 1;
         case TokenType::Multiply:
@@ -105,32 +106,50 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
             }
             case TokenType::Plus:
             case TokenType::Minus:
+            case TokenType::UnaryMinus:
             case TokenType::Multiply:
             case TokenType::Pow:
             case TokenType::Divide: {
                 while (!operators.empty() && precedence(operators.top().type) >= precedence(token.type)) {
                     auto right = output.top();
                     output.pop();
-                    auto left = output.top();
-                    output.pop();
 
                     ASTNode* op;
                     switch (operators.top().type) {
-                        case TokenType::Plus:
+                        case TokenType::Plus: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTPlus(left, right);
                             break;
-                        case TokenType::Minus:
+                        }
+                        case TokenType::UnaryMinus: {
+                            op = new ASTNegate(right);
+                            break;
+                        }
+                        case TokenType::Minus: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTMinus(left, right);
                             break;
-                        case TokenType::Multiply:
+                        }
+                        case TokenType::Multiply: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTMultiply(left, right);
                             break;
-                        case TokenType::Divide:
+                        }
+                        case TokenType::Divide: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTDivide(left, right);
                             break;
-                        case TokenType::Pow:
+                        }
+                        case TokenType::Pow: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTPow(left, right);
                             break;
+                        }
                         default:
                             return tl::make_unexpected("Invalid operator");
                     }
@@ -149,26 +168,43 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
                 while (!operators.empty() && operators.top().type != TokenType::LParen) {
                     auto right = output.top();
                     output.pop();
-                    auto left = output.top();
-                    output.pop();
 
                     ASTNode* op;
                     switch (operators.top().type) {
-                        case TokenType::Plus:
+                        case TokenType::Plus: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTPlus(left, right);
                             break;
-                        case TokenType::Minus:
+                        }
+                        case TokenType::UnaryMinus: {
+                            op = new ASTNegate(right);
+                            break;
+                        }
+                        case TokenType::Minus: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTMinus(left, right);
                             break;
-                        case TokenType::Multiply:
+                        }
+                        case TokenType::Multiply: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTMultiply(left, right);
                             break;
-                        case TokenType::Divide:
+                        }
+                        case TokenType::Divide: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTDivide(left, right);
                             break;
-                        case TokenType::Pow:
+                        }
+                        case TokenType::Pow: {
+                            auto left = output.top();
+                            output.pop();
                             op = new ASTPow(left, right);
                             break;
+                        }
                         default:
                             return tl::make_unexpected("Invalid operator");
                     }
@@ -189,24 +225,42 @@ auto ast(const std::vector<ParseToken>& tokens) -> tl::expected<ASTNode*, std::s
     while (!operators.empty()) {
         auto right = output.top();
         output.pop();
-        auto left = output.top();
-        output.pop();
+
         switch (operators.top().type) {
-            case TokenType::Plus:
+            case TokenType::Plus: {
+                auto left = output.top();
+                output.pop();
                 output.push(new ASTPlus(left, right));
                 break;
-            case TokenType::Minus:
+            }
+            case TokenType::UnaryMinus: {
+                output.push(new ASTNegate(right));
+                break;
+            }
+            case TokenType::Minus: {
+                auto left = output.top();
+                output.pop();
                 output.push(new ASTMinus(left, right));
                 break;
-            case TokenType::Multiply:
+            }
+            case TokenType::Multiply: {
+                auto left = output.top();
+                output.pop();
                 output.push(new ASTMultiply(left, right));
                 break;
-            case TokenType::Divide:
+            }
+            case TokenType::Divide: {
+                auto left = output.top();
+                output.pop();
                 output.push(new ASTDivide(left, right));
                 break;
-            case TokenType::Pow:
+            }
+            case TokenType::Pow: {
+                auto left = output.top();
+                output.pop();
                 output.push(new ASTPow(left, right));
                 break;
+            }
             default:
                 return tl::make_unexpected("Invalid operator");
         }
